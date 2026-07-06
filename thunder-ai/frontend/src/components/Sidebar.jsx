@@ -1,21 +1,19 @@
-import { useEffect, useState } from "react";
-import {
-  fetchConversations,
-  renameConversation,
-  deleteConversation,
-} from "../api/client";
+import { useState } from "react";
 
 export default function Sidebar({
-  activeConversationId,
-  onSelectConversation,
-  onNewChat,
+  items,
+  activeItemId,
+  onSelectItem,
+  onNewItem,
+  onRenameItem,
+  onDeleteItem,
+  onOpenChatsList,
   onOpenMemory,
   user,
   onLogout,
   mode,
   onSwitchMode,
 }) {
-  const [conversations, setConversations] = useState([]);
   const [collapsed, setCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -23,39 +21,30 @@ export default function Sidebar({
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
 
-  useEffect(() => {
-    fetchConversations().then(setConversations);
-  }, [activeConversationId]);
-
   function handleSelect(id) {
     setMenuOpenId(null);
-    onSelectConversation(id);
+    onSelectItem(id);
   }
 
-  function startRename(conv) {
+  function startRename(item) {
     setMenuOpenId(null);
-    setRenamingId(conv._id);
-    setRenameValue(conv.title);
+    setRenamingId(item._id);
+    setRenameValue(item.title);
   }
 
-  async function submitRename(id) {
-    if (renameValue.trim()) {
-      const updated = await renameConversation(id, renameValue.trim());
-      setConversations((prev) => prev.map((c) => (c._id === id ? updated : c)));
-    }
+  function submitRename(id) {
+    if (renameValue.trim()) onRenameItem(id, renameValue.trim());
     setRenamingId(null);
   }
 
-  async function handleDelete(id) {
+  function handleDelete(id) {
     setMenuOpenId(null);
-    await deleteConversation(id);
-    setConversations((prev) => prev.filter((c) => c._id !== id));
-    if (activeConversationId === id) onNewChat();
+    onDeleteItem(id);
   }
 
-  const visibleConversations = query
-    ? conversations.filter((c) => c.title.toLowerCase().includes(query.toLowerCase()))
-    : conversations;
+  const visibleItems = query
+    ? items.filter((i) => i.title.toLowerCase().includes(query.toLowerCase()))
+    : items;
 
   if (collapsed) {
     return (
@@ -78,7 +67,7 @@ export default function Sidebar({
         <button onClick={() => setCollapsed(false)} title="Search chats" style={headerIconButtonStyle}>
           <SearchIcon />
         </button>
-        <button onClick={onNewChat} title="New chat" style={collapsedIconStyle}>
+        <button onClick={onNewItem} title="New chat" style={collapsedIconStyle}>
           ＋
         </button>
         <button
@@ -146,7 +135,7 @@ export default function Sidebar({
         <div style={{ display: "flex", gap: 6 }}>
           <button
             onClick={() => setSearchOpen((v) => !v)}
-            title="Search chats"
+            title="Search"
             style={{
               ...headerIconButtonStyle,
               borderColor: searchOpen ? "var(--accent)" : "var(--border)",
@@ -171,7 +160,7 @@ export default function Sidebar({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search chats..."
+            placeholder={mode === "chat" ? "Search chats..." : "Search code chats..."}
             style={{
               width: "100%",
               padding: "8px 10px",
@@ -220,15 +209,19 @@ export default function Sidebar({
       </div>
 
       <div style={{ padding: "0 12px 10px" }}>
-        <button onClick={onNewChat} style={navButtonStyle(true)}>
-          <span>＋</span> New chat
+        <button onClick={onNewItem} style={navButtonStyle(true)}>
+          <PlusIcon /> {mode === "chat" ? "New chat" : "New code chat"}
         </button>
       </div>
 
       <nav style={{ padding: "0 12px 8px", display: "flex", flexDirection: "column", gap: 2 }}>
-        <div style={navButtonStyle(true)}>
-          <span>💬</span> Chats
-        </div>
+        <button
+          onClick={onOpenChatsList}
+          style={navButtonStyle(true)}
+          title={mode === "chat" ? "See all chats" : "See all code chats"}
+        >
+          <ChatsIcon /> {mode === "chat" ? "Chats" : "Code chats"}
+        </button>
         <button disabled style={navButtonStyle(false)} title="Coming soon">
           <span>📁</span> Projects
           <span style={soonBadgeStyle}>Soon</span>
@@ -263,25 +256,31 @@ export default function Sidebar({
       </p>
 
       <div style={{ overflowY: "auto", padding: "0 8px", flex: 1 }}>
-        {visibleConversations.map((c) => (
+        {visibleItems.length === 0 && (
+          <p style={{ color: "var(--text-muted)", fontSize: 12, padding: "8px 10px" }}>
+            {mode === "chat"
+              ? "No chats yet. Send a message to start one."
+              : "No code chats yet. Debug some code to save one."}
+          </p>
+        )}
+        {visibleItems.map((item) => (
           <div
-            key={c._id}
+            key={item._id}
             style={{
               position: "relative",
               display: "flex",
               alignItems: "center",
               borderRadius: 8,
-              background:
-                activeConversationId === c._id ? "var(--panel-raised)" : "transparent",
+              background: activeItemId === item._id ? "var(--panel-raised)" : "transparent",
             }}
           >
-            {renamingId === c._id ? (
+            {renamingId === item._id ? (
               <input
                 autoFocus
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
-                onBlur={() => submitRename(c._id)}
-                onKeyDown={(e) => e.key === "Enter" && submitRename(c._id)}
+                onBlur={() => submitRename(item._id)}
+                onKeyDown={(e) => e.key === "Enter" && submitRename(item._id)}
                 style={{
                   flex: 1,
                   margin: "4px 6px",
@@ -296,25 +295,23 @@ export default function Sidebar({
             ) : (
               <>
                 <div
-                  onClick={() => handleSelect(c._id)}
+                  onClick={() => handleSelect(item._id)}
                   style={{
                     flex: 1,
                     padding: "9px 6px 9px 10px",
                     fontSize: 13,
                     color:
-                      activeConversationId === c._id
-                        ? "var(--text-primary)"
-                        : "var(--text-secondary)",
+                      activeItemId === item._id ? "var(--text-primary)" : "var(--text-secondary)",
                     cursor: "pointer",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {c.title}
+                  {item.title}
                 </div>
                 <button
-                  onClick={() => setMenuOpenId(menuOpenId === c._id ? null : c._id)}
+                  onClick={() => setMenuOpenId(menuOpenId === item._id ? null : item._id)}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -328,7 +325,7 @@ export default function Sidebar({
               </>
             )}
 
-            {menuOpenId === c._id && (
+            {menuOpenId === item._id && (
               <div
                 style={{
                   position: "absolute",
@@ -342,11 +339,11 @@ export default function Sidebar({
                   minWidth: 110,
                 }}
               >
-                <button onClick={() => startRename(c)} style={menuItemStyle}>
+                <button onClick={() => startRename(item)} style={menuItemStyle}>
                   Rename
                 </button>
                 <button
-                  onClick={() => handleDelete(c._id)}
+                  onClick={() => handleDelete(item._id)}
                   style={{ ...menuItemStyle, color: "var(--danger)" }}
                 >
                   Delete
@@ -474,6 +471,24 @@ const headerIconButtonStyle = {
   borderRadius: 8,
   color: "var(--text-secondary)",
 };
+
+function PlusIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function ChatsIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="10" r="6" />
+      <circle cx="15" cy="14" r="6" />
+    </svg>
+  );
+}
 
 function SearchIcon() {
   return (

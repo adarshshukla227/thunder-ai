@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 
-export default function ChatWindow({ messages, isThinking, voiceOutputOn }) {
+export default function ChatWindow({ messages, isThinking, voiceOutputOn, onRegenerate }) {
   const bottomRef = useRef(null);
   const lastSpokenId = useRef(null);
 
@@ -43,8 +43,14 @@ export default function ChatWindow({ messages, isThinking, voiceOutputOn }) {
 
   return (
     <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
-      {messages.map((m) => (
-        <MessageBubble key={m._id || m.tempId} role={m.role} content={m.content} />
+      {messages.map((m, idx) => (
+        <MessageBubble
+          key={m._id || m.tempId}
+          role={m.role}
+          content={m.content}
+          isLast={idx === messages.length - 1}
+          onRegenerate={onRegenerate}
+        />
       ))}
       {isThinking && (
         <div style={{ color: "var(--text-muted)", fontSize: 13, padding: "6px 0" }}>

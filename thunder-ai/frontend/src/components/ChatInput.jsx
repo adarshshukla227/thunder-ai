@@ -59,35 +59,62 @@ export default function ChatInput({ onSend, disabled, voiceOutputOn, onToggleVoi
     setListening(true);
   }
 
-  return (
-    <div style={{ borderTop: "0.5px solid var(--border)", padding: "10px 24px 20px" }}>
-      {attachment && (
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            background: "var(--panel-raised)",
-            border: "0.5px solid var(--border)",
-            borderRadius: 8,
-            padding: "5px 10px",
-            marginBottom: 8,
-            fontSize: 12,
-            color: "var(--text-secondary)",
-          }}
-        >
-          📎 {attachment.name}
-          <button
-            onClick={() => setAttachment(null)}
-            aria-label="Remove attachment"
-            style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 13 }}
-          >
-            ×
-          </button>
-        </div>
-      )}
+  const hasContent = value.trim().length > 0 || !!attachment;
 
-      <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+  return (
+    <div style={{ padding: "10px 24px 20px" }}>
+      <div
+        style={{
+          background: "var(--panel-raised)",
+          border: "0.5px solid var(--border)",
+          borderRadius: 20,
+          padding: "12px 14px 10px",
+        }}
+      >
+        {attachment && (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: "var(--panel)",
+              border: "0.5px solid var(--border)",
+              borderRadius: 8,
+              padding: "5px 10px",
+              marginBottom: 8,
+              fontSize: 12,
+              color: "var(--text-secondary)",
+            }}
+          >
+            📎 {attachment.name}
+            <button
+              onClick={() => setAttachment(null)}
+              aria-label="Remove attachment"
+              style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 13 }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Write a message..."
+          rows={2}
+          style={{
+            width: "100%",
+            resize: "none",
+            background: "transparent",
+            border: "none",
+            color: "var(--text-primary)",
+            fontSize: 14,
+            fontFamily: "var(--font-sans)",
+            padding: "2px 2px 8px",
+          }}
+        />
+
         <input
           ref={fileInputRef}
           type="file"
@@ -95,86 +122,104 @@ export default function ChatInput({ onSend, disabled, voiceOutputOn, onToggleVoi
           onChange={handleFileChange}
           style={{ display: "none" }}
         />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          title="Attach a file"
-          style={iconButtonStyle}
-        >
-          +
-        </button>
 
-        <textarea
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Write a message..."
-          rows={1}
-          style={{
-            flex: 1,
-            resize: "none",
-            background: "var(--panel-raised)",
-            border: "0.5px solid var(--border)",
-            borderRadius: 10,
-            padding: "12px 14px",
-            color: "var(--text-primary)",
-            fontSize: 14,
-            fontFamily: "var(--font-sans)",
-          }}
-        />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Attach a file"
+            style={roundIconStyle()}
+          >
+            <PlusIcon />
+          </button>
 
-        <button
-          onClick={toggleMic}
-          title={listening ? "Stop listening" : "Voice input"}
-          style={{
-            ...iconButtonStyle,
-            borderColor: listening ? "var(--accent)" : "var(--border)",
-            color: listening ? "var(--accent)" : "var(--text-secondary)",
-          }}
-        >
-          {listening ? "●" : "🎙"}
-        </button>
-
-        <button
-          onClick={onToggleVoiceOutput}
-          title={voiceOutputOn ? "Voice replies on" : "Voice replies off"}
-          style={{
-            ...iconButtonStyle,
-            borderColor: voiceOutputOn ? "var(--accent)" : "var(--border)",
-            color: voiceOutputOn ? "var(--accent)" : "var(--text-secondary)",
-          }}
-        >
-          🔊
-        </button>
-
-        <button
-          onClick={handleSend}
-          disabled={disabled}
-          style={{
-            padding: "0 18px",
-            height: 42,
-            background: "var(--accent)",
-            border: "none",
-            borderRadius: 10,
-            color: "#1a1006",
-            fontSize: 13,
-            fontWeight: 600,
-            opacity: disabled ? 0.6 : 1,
-          }}
-        >
-          Send
-        </button>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            <button
+              onClick={toggleMic}
+              title={listening ? "Stop listening" : "Voice input"}
+              style={roundIconStyle(listening)}
+            >
+              <MicIcon />
+            </button>
+            <button
+              onClick={onToggleVoiceOutput}
+              title={voiceOutputOn ? "Voice replies on" : "Voice replies off"}
+              style={roundIconStyle(voiceOutputOn)}
+            >
+              <SpeakerIcon />
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={disabled || !hasContent}
+              title="Send"
+              style={{
+                width: 32,
+                height: 32,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
+                border: "none",
+                background: hasContent ? "var(--accent)" : "var(--border)",
+                color: hasContent ? "#1a1006" : "var(--text-muted)",
+                opacity: disabled ? 0.6 : 1,
+              }}
+            >
+              <SendIcon />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-const iconButtonStyle = {
-  width: 42,
-  height: 42,
-  flexShrink: 0,
-  background: "var(--panel-raised)",
-  border: "0.5px solid var(--border)",
-  borderRadius: 10,
-  fontSize: 15,
-  color: "var(--text-secondary)",
-};
+function roundIconStyle(active) {
+  return {
+    width: 32,
+    height: 32,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "transparent",
+    border: "none",
+    borderRadius: "50%",
+    color: active ? "var(--accent)" : "var(--text-secondary)",
+  };
+}
+
+function PlusIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function MicIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <line x1="12" y1="19" x2="12" y2="22" />
+    </svg>
+  );
+}
+
+function SpeakerIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="6 11 12 5 18 11" />
+    </svg>
+  );
+}

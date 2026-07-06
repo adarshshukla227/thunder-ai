@@ -83,6 +83,16 @@ export async function deleteConversation(conversationId) {
   return res.json();
 }
 
+export async function regenerateReply(conversationId) {
+  const res = await fetch(`${BASE_URL}/chat/${conversationId}/regenerate`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Couldn't regenerate. Try again.");
+  return data;
+}
+
 export async function debugCode(code, error, filename) {
   const res = await fetch(`${BASE_URL}/code/debug`, {
     method: "POST",
@@ -92,6 +102,42 @@ export async function debugCode(code, error, filename) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Debugging failed. Try again.");
   return data;
+}
+
+export async function fetchCodeSessions() {
+  const res = await fetch(`${BASE_URL}/code`, { headers: authHeaders() });
+  return res.json();
+}
+
+export async function fetchCodeSession(sessionId) {
+  const res = await fetch(`${BASE_URL}/code/${sessionId}`, { headers: authHeaders() });
+  return res.json();
+}
+
+export async function saveCodeSession(sessionData) {
+  const res = await fetch(`${BASE_URL}/code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(sessionData),
+  });
+  return res.json();
+}
+
+export async function renameCodeSession(sessionId, title) {
+  const res = await fetch(`${BASE_URL}/code/${sessionId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ title }),
+  });
+  return res.json();
+}
+
+export async function deleteCodeSession(sessionId) {
+  const res = await fetch(`${BASE_URL}/code/${sessionId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  return res.json();
 }
 
 export async function fetchMemories() {
