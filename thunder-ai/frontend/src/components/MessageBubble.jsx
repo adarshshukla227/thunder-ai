@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function MessageBubble({ role, content, isLast, onRegenerate }) {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   function handleCopy() {
     navigator.clipboard.writeText(content);
@@ -12,8 +13,19 @@ export default function MessageBubble({ role, content, isLast, onRegenerate }) {
 
   function handleReadAloud() {
     if (!("speechSynthesis" in window)) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(content));
+    const utterance = new SpeechSynthesisUtterance(content);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
   }
 
   return (
@@ -46,8 +58,8 @@ export default function MessageBubble({ role, content, isLast, onRegenerate }) {
           <ActionButton title={copied ? "Copied" : "Copy"} onClick={handleCopy}>
             {copied ? <CheckIcon /> : <CopyIcon />}
           </ActionButton>
-          <ActionButton title="Read aloud" onClick={handleReadAloud}>
-            <SpeakerIcon />
+          <ActionButton title={isSpeaking ? "Mute" : "Read aloud"} onClick={handleReadAloud} active={isSpeaking}>
+            {isSpeaking ? <MuteIcon /> : <SpeakerIcon />}
           </ActionButton>
           {isLast && (
             <ActionButton title="Retry" onClick={onRegenerate}>
@@ -60,7 +72,7 @@ export default function MessageBubble({ role, content, isLast, onRegenerate }) {
   );
 }
 
-function ActionButton({ title, onClick, children }) {
+function ActionButton({ title, onClick, children, active }) {
   return (
     <button
       onClick={onClick}
@@ -71,10 +83,10 @@ function ActionButton({ title, onClick, children }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "transparent",
+        background: active ? "var(--accent-dim)" : "transparent",
         border: "none",
         borderRadius: 6,
-        color: "var(--text-muted)",
+        color: active ? "var(--accent)" : "var(--text-muted)",
       }}
     >
       {children}
@@ -104,6 +116,16 @@ function SpeakerIcon() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
       <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+    </svg>
+  );
+}
+
+function MuteIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="23" y1="9" x2="17" y2="15" />
+      <line x1="17" y1="9" x2="23" y2="15" />
     </svg>
   );
 }

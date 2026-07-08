@@ -29,7 +29,6 @@ export default function ChatPage({ onLogout }) {
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [voiceOutputOn, setVoiceOutputOn] = useState(false);
 
   // Code mode state
   const [codeSessions, setCodeSessions] = useState([]);
@@ -185,14 +184,11 @@ export default function ChatPage({ onLogout }) {
               <ChatWindow
                 messages={messages}
                 isThinking={isThinking}
-                voiceOutputOn={voiceOutputOn}
                 onRegenerate={handleRegenerate}
               />
               <ChatInput
                 onSend={handleSend}
                 disabled={isThinking}
-                voiceOutputOn={voiceOutputOn}
-                onToggleVoiceOutput={() => setVoiceOutputOn((v) => !v)}
               />
             </div>
           </div>

@@ -1,28 +1,12 @@
 import { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 
-export default function ChatWindow({ messages, isThinking, voiceOutputOn, onRegenerate }) {
+export default function ChatWindow({ messages, isThinking, onRegenerate }) {
   const bottomRef = useRef(null);
-  const lastSpokenId = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
-
-  useEffect(() => {
-    if (!voiceOutputOn) return;
-    const last = messages[messages.length - 1];
-    if (!last || last.role !== "assistant") return;
-    const id = last._id || last.tempId;
-    if (id === lastSpokenId.current) return;
-    lastSpokenId.current = id;
-
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(last.content);
-      window.speechSynthesis.speak(utterance);
-    }
-  }, [messages, voiceOutputOn]);
 
   if (messages.length === 0 && !isThinking) {
     return (

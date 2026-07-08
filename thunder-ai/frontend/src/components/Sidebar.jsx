@@ -222,18 +222,6 @@ export default function Sidebar({
         >
           <ChatsIcon /> {mode === "chat" ? "Chats" : "Code chats"}
         </button>
-        <button disabled style={navButtonStyle(false)} title="Coming soon">
-          <span>📁</span> Projects
-          <span style={soonBadgeStyle}>Soon</span>
-        </button>
-        <button disabled style={navButtonStyle(false)} title="Coming soon">
-          <span>🧩</span> Artifacts
-          <span style={soonBadgeStyle}>Soon</span>
-        </button>
-        <button disabled style={navButtonStyle(false)} title="Coming soon">
-          <span>⚙️</span> Customize
-          <span style={soonBadgeStyle}>Soon</span>
-        </button>
       </nav>
 
       <button

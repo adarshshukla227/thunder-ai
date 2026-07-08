@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import dns from "dns";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
@@ -8,6 +9,8 @@ import memoryRoutes from "./routes/memoryRoutes.js";
 import codeRoutes from "./routes/codeRoutes.js";
 
 dotenv.config();
+
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = express();
 app.use(cors());

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 const SpeechRecognitionAPI =
   typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
-export default function ChatInput({ onSend, disabled, voiceOutputOn, onToggleVoiceOutput }) {
+export default function ChatInput({ onSend, disabled }) {
   const [value, setValue] = useState("");
   const [attachment, setAttachment] = useState(null);
   const [listening, setListening] = useState(false);
@@ -141,13 +141,6 @@ export default function ChatInput({ onSend, disabled, voiceOutputOn, onToggleVoi
               <MicIcon />
             </button>
             <button
-              onClick={onToggleVoiceOutput}
-              title={voiceOutputOn ? "Voice replies on" : "Voice replies off"}
-              style={roundIconStyle(voiceOutputOn)}
-            >
-              <SpeakerIcon />
-            </button>
-            <button
               onClick={handleSend}
               disabled={disabled || !hasContent}
               title="Send"
@@ -202,15 +195,6 @@ function MicIcon() {
       <rect x="9" y="2" width="6" height="12" rx="3" />
       <path d="M5 10a7 7 0 0 0 14 0" />
       <line x1="12" y1="19" x2="12" y2="22" />
-    </svg>
-  );
-}
-
-function SpeakerIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-      <path d="M15.5 8.5a5 5 0 0 1 0 7" />
     </svg>
   );
 }
